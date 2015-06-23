@@ -3,7 +3,7 @@
 # @brief One script to rule them all.
 #
 #        Downloads schedule data for a specific semester, including course
-#        meeting times, course descriptions, pre/corequisites, FCEs, and so on.
+#        meeting times, course descriptions, pre/corequisites, and so on.
 #        Output is parsed into a single JSON output file.
 #
 #        If you want to download just one of Course description data, course
@@ -24,7 +24,6 @@ import sys
 import getpass
 from scripts.parse_descs import parse_descs
 from scripts.parse_schedules import parse_schedules
-from scripts.parse_fces import parse_fces
 
 
 # Constants
@@ -33,12 +32,10 @@ DESC_SOURCES = 'data/schedule_pages.txt'
 
 
 # @function aggregate
-# @brief Combines the course descriptions, schedules, and FCEs data sets into
-#        one object.
+# @brief Combines the course descriptions, schedules
 # @param descs: Course desciptions object as returned by parse_descs.
 # @param schedules: Course schedules object as returned by parse_descs.
-# @param fces: FCEs object as returned by parse_descs.
-def aggregate(descs, schedules, fces):
+def aggregate(descs, schedules):
     courses = {}
 
     for department in schedules:
@@ -53,7 +50,7 @@ def aggregate(descs, schedules, fces):
 
                     courses[str(num)] = desc
 
-    return {'courses': courses, 'fces': fces}
+    return {'courses': courses}
 
 
 if __name__ == '__main__':
@@ -69,15 +66,6 @@ if __name__ == '__main__':
         print("Requested quarter is not one of ['S', 'M1', 'M2', 'F']")
         sys.exit()
 
-    if (len(sys.argv) == 3):
-        print('Please input your Andrew username and password. '
-              'We never store your login info.')
-        username = input('Username: ')
-        password = getpass.getpass()
-    else:
-        username = sys.argv[3]
-        password = sys.argv[4]
-
     print('Scottylabs CMU Course-API')
 
     print('Retrieving course descriptions:')
@@ -86,11 +74,8 @@ if __name__ == '__main__':
     print('Retrieving course schedule:')
     schedules = parse_schedules(semester)
 
-    print('Retrieving FCEs:')
-    fces = parse_fces(username, password)
-
     print('Aggregating data...')
-    results = aggregate(descs, schedules, fces)
+    results = aggregate(descs, schedules)
 
     print('Writing data...')
     with open(outpath, 'w') as outfile:
